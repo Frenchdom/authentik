@@ -13,6 +13,7 @@ import { customElement } from "lit/decorators.js";
 import { until } from "lit/directives/until.js";
 
 import PFAbout from "@patternfly/patternfly/components/AboutModalBox/about-modal-box.css";
+import PFList from "@patternfly/patternfly/components/List/list.css";
 
 import { AdminApi, CapabilitiesEnum, LicenseSummaryStatusEnum } from "@goauthentik/api";
 
@@ -21,7 +22,11 @@ export class AboutModal extends WithLicenseSummary(WithBrandConfig(ModalButton))
     static get styles() {
         return super.styles.concat(
             PFAbout,
+            PFList,
             css`
+                .pf-c-about-modal-box {
+                    --pf-c-about-modal-box--lg--Height: 64rem;
+                }
                 .pf-c-about-modal-box__hero {
                     background-image: url("/static/dist/assets/images/flow_background.jpg");
                 }
@@ -43,18 +48,29 @@ export class AboutModal extends WithLicenseSummary(WithBrandConfig(ModalButton))
                 >${version.buildHash}</a
             >`;
         }
-        return [
+        const entries: [string, string | TemplateResult][] = [
             [msg("Version"), version.versionCurrent],
             [msg("UI Version"), VERSION],
             [msg("Build"), build],
             [msg("Python version"), status.runtime.pythonVersion],
-            [msg("Platform"), status.runtime.platform],
-            [msg("Kernel"), status.runtime.uname],
             [
                 msg("OpenSSL"),
                 `${status.runtime.opensslVersion} ${status.runtime.opensslFipsEnabled ? "FIPS" : ""}`,
             ],
+            [msg("Platform"), status.runtime.platform],
+            [msg("Kernel"), status.runtime.uname],
         ];
+        if (this.licenseSummary.status != LicenseSummaryStatusEnum.Unlicensed) {
+            entries.push([
+                msg("Enterprise features"),
+                html`<ul class="pf-c-list">
+                    ${this.licenseSummary.features.map((feat) => {
+                        return html`<li>${feat}</li>`;
+                    })}
+                </ul>`,
+            ]);
+        }
+        return entries;
     }
 
     renderModal() {

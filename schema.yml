@@ -44724,8 +44724,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LicenseFlagsEnum'
+        features:
+          type: array
+          items:
+            type: string
+          readOnly: true
       required:
       - external_users
+      - features
       - internal_users
       - latest_valid
       - license_flags

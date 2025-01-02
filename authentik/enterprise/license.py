@@ -21,6 +21,7 @@ from rest_framework.fields import (
     DateTimeField,
     IntegerField,
     ListField,
+    SerializerMethodField,
 )
 
 from authentik.core.api.utils import PassiveSerializer
@@ -34,6 +35,7 @@ from authentik.enterprise.models import (
     LicenseUsage,
     LicenseUsageStatus,
 )
+from authentik.lib.utils.reflection import get_apps
 from authentik.tenants.utils import get_unique_identifier
 
 CACHE_KEY_ENTERPRISE_LICENSE = "goauthentik.io/enterprise/license"
@@ -78,6 +80,12 @@ class LicenseSummarySerializer(PassiveSerializer):
     status = ChoiceField(choices=LicenseUsageStatus.choices)
     latest_valid = DateTimeField()
     license_flags = ListField(child=ChoiceField(choices=tuple(x.value for x in LicenseFlags)))
+    features = SerializerMethodField()
+
+    def get_features(self, _) -> list[str]:
+        return sorted(
+            [x.verbose_name for x in get_apps() if x.name.startswith("authentik.enterprise.")]
+        )
 
 
 @dataclass
